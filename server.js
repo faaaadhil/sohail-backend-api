@@ -36,6 +36,26 @@ const authenticateToken = (req, res, next) => {
     });
 };
 
+// Role-Based Authorization Middleware
+function authorizeRoles(...allowedRoles) {
+    return (req, res, next) => {
+        // Double-check that the user exists (authenticateToken should have caught this, but it's safe to check)
+        if (!req.user) {
+            return res.status(401).json({ message: "Unauthorized: No user data found." });
+        }
+
+        // Check if the user's role is in the list of allowed roles for this route
+        if (!allowedRoles.includes(req.user.role)) {
+            return res.status(403).json({ 
+                message: "Forbidden: You do not have the required role to access this resource." 
+            });
+        }
+
+        // If their role matches, let them through!
+        next();
+    };
+}
+
 // ==========================================
 // AUTHENTICATION ENDPOINTS
 // ==========================================
@@ -183,6 +203,22 @@ app.delete('/api/tasks/:id', authenticateToken, async (req, res) => {
     } catch (err) {
         console.error(err);
         res.status(500).json({ error: 'Server error deleting task' });
+    }
+});
+
+// ==========================================
+// ADMIN ONLY ENDPOINTS
+// ==========================================
+
+// View all users in the system (Admin only)
+app.get('/api/admin/users', authenticateToken, authorizeRoles('Admin', 'Supervisor'), async (req, res) => {
+    try {
+        // Fetch all users (excluding passwords for safety)
+        const result = await pool.query('SELECT id, email, full_name, role, created_at FROM users');
+        res.status(200).json(result.rows);
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: 'Server error fetching users' });
     }
 });
 
