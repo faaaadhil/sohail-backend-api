@@ -61,3 +61,9 @@ The PostgreSQL database consists of two tables with a one-to-many relationship:
    DB_PORT=5432
    PORT=3000
    JWT_SECRET=your_secure_random_secret_string
+
+## Running Automated Tests
+This API is fully tested using Jest and Supertest. To run the integration test suite:
+1. Ensure your `.env` file is properly configured with your PostgreSQL credentials.
+2. Run the following command in your terminal:
+   `npm test`

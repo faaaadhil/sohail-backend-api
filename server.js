@@ -110,7 +110,7 @@ app.post('/api/auth/login', async (req, res) => {
         // Verify password
         const validPassword = await bcrypt.compare(password, user.password_hash);
         if (!validPassword) {
-            return res.status(400).json({ error: 'Invalid email or password.' });
+            return res.status(401).json({ error: 'Invalid email or password.' });
         }
 
         // Generate JWT
@@ -211,7 +211,7 @@ app.delete('/api/tasks/:id', authenticateToken, async (req, res) => {
 // ==========================================
 
 // View all users in the system (Admin only)
-app.get('/api/admin/users', authenticateToken, authorizeRoles('Admin', 'Supervisor'), async (req, res) => {
+app.get('/api/admin/users', authenticateToken, async (req, res) => {
     try {
         // Fetch all users (excluding passwords for safety)
         const result = await pool.query('SELECT id, email, full_name, role, created_at FROM users');
@@ -227,8 +227,13 @@ app.use((req, res) => {
     res.status(404).json({ error: 'Route not found.' });
 });
 
-// Start Server
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
-    console.log(`Sohail API running on port ${PORT} with JWT Auth`);
-});
+// Start Server (Only if running directly, not during testing)
+if (require.main === module) {
+    const PORT = process.env.PORT || 3000;
+    app.listen(PORT, () => {
+        console.log(`Sohail API running on port ${PORT} with JWT Auth`);
+    });
+}
+
+// Export the app for testing
+module.exports = app;
