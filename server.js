@@ -7,14 +7,23 @@ const jwt = require('jsonwebtoken');
 const app = express();
 app.use(express.json());
 
-// Securely connect to PostgreSQL
-const pool = new Pool({
-    user: process.env.DB_USER,
-    host: process.env.DB_HOST,
-    database: process.env.DB_NAME,
-    password: process.env.DB_PASSWORD,
-    port: process.env.DB_PORT,
-});
+// Securely connect to PostgreSQL (Dynamic for Local & Production)
+const isProduction = process.env.NODE_ENV === 'production';
+
+const pool = new Pool(
+    isProduction 
+        ? {
+            connectionString: process.env.DATABASE_URL,
+            ssl: { rejectUnauthorized: false }
+          }
+        : {
+            user: process.env.DB_USER,
+            host: process.env.DB_HOST,
+            database: process.env.DB_NAME,
+            password: process.env.DB_PASSWORD,
+            port: process.env.DB_PORT,
+          }
+);
 
 pool.connect()
     .then(() => console.log('Connected to PostgreSQL successfully.'))
@@ -211,7 +220,7 @@ app.delete('/api/tasks/:id', authenticateToken, async (req, res) => {
 // ==========================================
 
 // View all users in the system (Admin only)
-app.get('/api/admin/users', authenticateToken, async (req, res) => {
+app.get('/api/admin/users', authenticateToken, authorizeRoles('Admin', 'Supervisor'), async (req, res) => {
     try {
         // Fetch all users (excluding passwords for safety)
         const result = await pool.query('SELECT id, email, full_name, role, created_at FROM users');
