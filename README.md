@@ -67,3 +67,15 @@ This API is fully tested using Jest and Supertest. To run the integration test s
 1. Ensure your `.env` file is properly configured with your PostgreSQL credentials.
 2. Run the following command in your terminal:
    `npm test`
+
+## Deployment
+
+This API is deployed live on [Render](https://render.com/) and uses a managed PostgreSQL cloud database.
+git add README.md
+**Live Base URL:** `https://sohail-backend-api.onrender.com`
+
+### How it's Hosted & Redeployment
+The application is connected directly to the `main` branch of this GitHub repository. Render is configured for continuous deployment. Any new features or fixes that are pushed or merged into the `main` branch will automatically trigger a new build and redeploy the live server within minutes.
+
+### Security Confirmation
+All sensitive variables (including the `DATABASE_URL` and `JWT_SECRET`) are securely injected directly into the Render host environment variables. The local `.env` file is strictly included in `.gitignore` to ensure no production secrets are ever committed to version control.
